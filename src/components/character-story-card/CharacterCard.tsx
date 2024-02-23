@@ -53,7 +53,7 @@ const CharacterCard = ({ size }: Props) => {
     position: absolute;
     left: -80px;
     top: -100px;
-    z-index: 2;
+    z-index: 1;
     width: ${size === "large" ? "500px" : "400px"};
   `;
 

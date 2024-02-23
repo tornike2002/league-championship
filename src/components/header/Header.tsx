@@ -6,29 +6,24 @@ import startIcon from "/icons/start.png";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 
-
-import loginBgMusic from '/assets/loginBgMusic.mp4'
+import loginBgMusic from "/assets/loginBgMusic.mp4";
 
 const Header = () => {
   const navigate = useNavigate();
 
-
   const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
-
 
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : 0.15;
     }
-  },[isMuted])  
+  }, [isMuted]);
 
-console.log(isMuted)
+  console.log(isMuted);
   return (
     <HeaderContainer>
-
       <audio ref={audioRef} src={loginBgMusic} autoPlay loop />
-
 
       <img src="" alt="logo" />
       <ul>
@@ -38,17 +33,12 @@ console.log(isMuted)
         <NavLink to="/">about/Contact</NavLink>
       </ul>
       <div>
-        <GoldenButton onClick={()=> setIsMuted(!isMuted) }>
-          {isMuted?
-            (
-              <img src={startIcon} alt="" width={10} />
-            )
-            :
-            (
-              <img src={pauseIcon} alt="" width={10} />
-            )
-            
-          }
+        <GoldenButton onClick={() => setIsMuted(!isMuted)}>
+          {isMuted ? (
+            <img src={startIcon} alt="" width={10} />
+          ) : (
+            <img src={pauseIcon} alt="" width={10} />
+          )}
         </GoldenButton>
         <GoldenButton onClick={() => navigate("/registration")}>
           login
@@ -66,7 +56,7 @@ const HeaderContainer = styled.header`
   height: 85px;
   background-color: rgba(0, 0, 0, 0.562);
   position: fixed;
-  z-index: 25;
+  z-index: 2;
   backdrop-filter: blur(5px);
   padding: 0 5%;
   ul {
