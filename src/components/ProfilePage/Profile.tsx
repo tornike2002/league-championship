@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { toast } from 'react-toastify';
+
 import { Link, NavLink } from "react-router-dom";
 import LoginBg from "../login&registration/LoginBg";
 import GoldenButton from "../../styled-components/golden-button";
@@ -45,6 +47,9 @@ function Profile() {
   const [allUsers, setAllUsers] = useState<userType[]>([]);
   const [modalHandler, setModalHandler] = useState<boolean>(false);
   const [selectedUser, setSelectedUser] = useState<userType | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+
+  const [notificationPopup, setNotificationPopup] = useState<boolean>(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -64,7 +69,7 @@ function Profile() {
     };
     getUser();
   }, []);
-  console.log(`team:${team} user:${user?.username}`)
+
 
   useEffect(() => {
     const getAllUsers = async () => {
@@ -78,15 +83,49 @@ function Profile() {
     getAllUsers();
   }, []);
 
+
+const sendInvitationHandler = () =>{
+  if(selectedUser && selectedRole && team){
+    const sendInvitation = async () => {
+      if (!selectedUser || !team || !selectedRole) return;
+  
+        try {
+        const response = await axios.post("/api/invitation/", {
+          receiver: selectedUser.id,
+          team: team.id,
+          role: selectedRole,
+          status: 'Pending',
+        }, {
+          headers: {
+            Authorization: `Token ${getAccessToken()}`,
+          },
+        });
+        if (response.status === 201) {
+          toast.success('Invitation sent successfully');
+        } else {
+          toast.error('Unexpected error occurred while sending invitation');
+        }
+        console.log(response)
+      } catch (error) {
+        toast.error('Something wrong, try again!');
+      }
+    };
+    
+    sendInvitation();
+  }
+}
+
   // open/close modal
-  const profileModalHandler = () => {
+  const profileModalHandler = (role: string) => {
     setModalHandler((value) => !value);
+    if(role.length > 0){
+      setSelectedRole(role);
+    }
   };
 
   const handleUserSelect = (selectedOption: any) => {
       setSelectedUser(selectedOption);
   };
-
 
 
   return (
@@ -98,8 +137,15 @@ function Profile() {
       </NavLink>
 
       <ProfileContainer>
-        <NotificationIcon src="./assets/notification.png" alt="" />
+        <NotificationIcon onClick={() => setNotificationPopup(true)} src="./assets/notification.png" alt="" />
         <NotificationDot src="./assets/notificationDot.png" alt="" />
+        {
+          notificationPopup &&
+          <NotPupup>
+          
+            ioioio
+          </NotPupup>
+        }
 
         <ProfileSection>
           <img src="./assets/profileImgBorder.png" alt="" />
@@ -126,8 +172,9 @@ function Profile() {
                     <p>Top lane</p>
                   </div>
                   <img
+  
                     src="./assets/addIcon.png"
-                    onClick={profileModalHandler}
+                    onClick={()=>profileModalHandler("Top lane")}
                   />
                 </li>
                 <li>
@@ -137,7 +184,7 @@ function Profile() {
                   </div>
                   <img
                     src="./assets/addIcon.png"
-                    onClick={profileModalHandler}
+                    onClick={()=>profileModalHandler("Mid lane")}
                   />
                 </li>
                 <li>
@@ -147,7 +194,7 @@ function Profile() {
                   </div>
                   <img
                     src="./assets/addIcon.png"
-                    onClick={profileModalHandler}
+                    onClick={()=>profileModalHandler("Jungle")}
                   />
                 </li>
                 <li>
@@ -157,7 +204,7 @@ function Profile() {
                   </div>
                   <img
                     src="./assets/addIcon.png"
-                    onClick={profileModalHandler}
+                    onClick={()=>profileModalHandler("Bot lane")}
                   />
                 </li>
                 <li>
@@ -167,31 +214,33 @@ function Profile() {
                   </div>
                   <img
                     src="./assets/addIcon.png"
-                    onClick={profileModalHandler}
+                    onClick={()=>profileModalHandler("Support")}
                   />
                 </li>
                 <li>
                   <img src={PlayerIconSup} width={30} alt="" />
                   <div>
-                    <p>Sub</p>
+                    <p>Sub player 1</p>
                   </div>
                   <img
                     src="./assets/addIcon.png"
-                    onClick={profileModalHandler}
+                    onClick={()=>profileModalHandler("Sub player 1")}
                   />
                 </li>
                 <li>
                   <img src={PlayerIconSup} width={30} alt="" />
                   <div>
-                    <p>Sub</p>
+                    <p>Sub player 2</p>
                   </div>
                   <img
                     src="./assets/addIcon.png"
-                    onClick={profileModalHandler}
+                    onClick={()=>profileModalHandler("Sub player 2")}
                   />
                 </li>
               </ul>
+              <GoldenButton style={{marginTop:'20px', marginBottom:'170px', cursor:"pointer"}}>Create team</GoldenButton>
             </Container>
+            
           </>
         )}
       </ProfileContainer>
@@ -199,18 +248,18 @@ function Profile() {
         <ProfileModal>
           
             <CloseOutlined
-              onClick={profileModalHandler}
+              onClick={()=>profileModalHandler("")}
               className="profileModal_closer"
             />
           <div>
           <Select
-            options={allUsers.map(user => ({ value: user.id, label: user.in_game_name }))}
+            options={allUsers.map(user => ({ id: user.id, label: user.in_game_name }))}
             onChange={handleUserSelect}
             placeholder="Select User"
             styles={customStyles}
           />
           </div>
-          <GoldenButton style={{marginLeft:'110px',marginBottom:'50px'}}>Send</GoldenButton>
+          <GoldenButton onClick={sendInvitationHandler} style={{marginLeft:'110px',marginBottom:'50px'}}>Send</GoldenButton>
         </ProfileModal>
       )}
     </div>
@@ -229,6 +278,7 @@ const ProfileContainer = styled.div`
   margin-right: auto;
   margin-top: 144px;
   width: 600px;
+  min-height:870px;
   backdrop-filter: blur(8px);
   background-color: rgba(0, 0, 0, 0.6);
 `;
@@ -350,6 +400,22 @@ const ProfileModal = styled.div`
     padding: 10px 20px;
   }
 `;
+
+//notification popup
+const NotPupup = styled.div`
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+
+
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index:1;
+`
 
 
 
